@@ -1,6 +1,6 @@
 #!/bin/sh
 ############################################################################################
-# Installer for GoDepoloyV, always will download the latest version                               #
+# Installer for GoDeployV, always will download the latest version                               #
 ############################################################################################
 set -e
 
@@ -16,19 +16,19 @@ get_arch() {
 download_url() {
     api_url=$1
     url_for=$2
-    wget -q -O- ${api_url}  | jq -r '.assets[].browser_download_url' | grep ${url_for}
+    wget -q -O- ${api_url}  | grep browser_download_url | grep ${url_for} | sed '/-/!{s/$/_/}' | sort -V | sed 's/_$//' | tail -n 1 |  awk '{print $2}' | tr -d '"' | tr -d ','
 }
 
 get_filename() {
     api_url=$1
     url_for=$2
-    wget -q -O- ${api_url}  | jq -r '.assets[].name' | grep ${url_for}
+    wget -q -O- ${api_url}  | grep name | grep ${url_for} | sed '/-/!{s/$/_/}' | sort -V | sed 's/_$//' | tail -n 1 |  awk '{print $2}' |  tr -d '"' | tr -d ','
 }
 
 
 release_version() {
     api_url=$1
-    wget -q -O- ${api_url}  | jq -r '.tag_name'
+    wget -q -O- ${api_url}  | grep tag_name | sed '/-/!{s/$/_/}' | sort -V | sed 's/_$//' | tail -n 1 |  awk '{print $2}' |  tr -d '"' | tr -d ','
 }
 
 check_sha() {
@@ -46,7 +46,7 @@ BINARY=godeployv
 FORMAT=tar.gz
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 ARCH=$(get_arch)
-API_URL=https://api.github.com/repos/Vauxoo/${BINARY}/releases/latest
+API_URL=https://api.github.com/repos/Vauxoo/${BINARY}/releases
 URL=$(download_url ${API_URL} ${OS}_${ARCH})
 CHECKSUMS=$(download_url ${API_URL} checksums.txt)
 TEMP=$(mktemp -d)
